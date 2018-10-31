@@ -1,0 +1,64 @@
+#!/bin/bash
+if [[ $EUID -eq 0 ]]
+then
+	if [[ ! -f "/opt/pkgver.txt" ]]
+	then
+		echo 62 > /opt/pkgver.txt;
+	fi
+	cd /opt
+	Get_pkgver()
+	{
+        _pkgver=$(cat ./pkgver.txt)
+        _link=https://download-installer.cdn.mozilla.net/pub/firefox/nightly/latest-mozilla-central-l10n/firefox-$_pkgver.0a1.zh-CN.linux-x86_64.tar.bz2
+        _httpcode=$(curl -I -s --connect-timeout 5 $_link -w %{http_code} | tail -1)
+        if [[ $_httpcode -eq "404" ]];
+        then
+            i=$_pkgver
+            let i++
+            echo $i > /opt/pkgver.txt;
+        fi
+	}
+	while true;do
+        a=$(cat /opt/pkgver.txt)
+        Get_pkgver;
+        b=$(cat /opt/pkgver.txt)
+        if [[ a -eq b ]];
+        then
+            break;
+        fi
+    done
+        _pkgver=$(cat ./pkgver.txt)
+#	Get_PM_Name()
+#	{
+#		if grep -Eqi "Manjaro" /etc/issue;
+#		then
+#			PM=pacman;
+#		elif grep -Eqi "Arch" /etc/issue;
+#		then
+#			PM=pacman;
+#		elif grep -Eqi "Debian" /etc/issue;
+#		then
+#			PM=apt;
+#		elif grep -Eqi "Ubuntu" /etc/issue;
+#		then
+#			PM=apt;
+#		fi
+#		echo $PM;
+#	}
+#	if [[ ! -f "/usr/bin/axel" ]]
+#	then
+#		if [[ PM -eq pacman ]]
+#		#then
+#			echo Y|pacman -S axel;
+#		elif [[ PM -eq apt ]]
+#		then
+#			echo y|apt install axel;
+#		fi
+#	fi
+	axel https://download-installer.cdn.mozilla.net/pub/firefox/nightly/latest-mozilla-central-l10n/firefox-$_pkgver.0a1.zh-CN.linux-x86_64.tar.bz2
+	tar -xvf firefox-$_pkgver.0a1.zh-CN.linux-x86_64.tar.bz2
+	rm firefox-$_pkgver.0a1.zh-CN.linux-x86_64.tar.bz2
+#	clear
+	echo "Done!";else
+	echo "Please run it as root!";
+fi
